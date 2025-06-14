@@ -1,0 +1,144 @@
+=== ESTRUCTURA DEL PROYECTO ===
+app
+app\Http
+app\Http\Controllers
+app\Http\Controllers\Api
+app\Http\Controllers\Controller.php
+app\Http\Middleware
+app\Http\Requests
+app\Http\Resources
+app\Models
+app\Models\Especie.php
+app\Models\Paciente.php
+app\Models\Propietario.php
+app\Models\Raza.php
+app\Models\Role.php
+app\Models\User.php
+app\Models\Veterinario.php
+app\Providers
+app\Providers\AppServiceProvider.php
+app\Services
+bootstrap
+bootstrap\cache
+bootstrap\app.php
+bootstrap\providers.php
+config
+config\app.php
+config\auth.php
+config\cache.php
+config\database.php
+config\filesystems.php
+config\logging.php
+config\mail.php
+config\queue.php
+config\sanctum.php
+config\services.php
+config\session.php
+database
+database\factories
+database\factories\UserFactory.php
+database\migrations
+database\migrations\0001_01_01_000000_create_users_table.php
+database\migrations\0001_01_01_000001_create_cache_table.php
+database\migrations\0001_01_01_000002_create_jobs_table.php
+database\migrations\2025_06_12_211649_create_personal_access_tokens_table.php
+database\migrations\2025_06_12_213304_create_roles_table.php
+database\migrations\2025_06_12_213331_add_fields_to_users_table.php
+database\migrations\2025_06_13_021912_create_especies_table.php
+database\migrations\2025_06_13_021942_create_razas_table.php
+database\migrations\2025_06_13_025352_create_propietarios_table.php
+database\migrations\2025_06_13_025400_create_pacientes_table.php
+database\migrations\2025_06_13_030818_add_soft_deletes_to_propietarios_and_pacientes_table.php
+database\migrations\2025_06_13_030943_create_veterinarios_table.php
+database\migrations\2025_06_13_100000_add_soft_deletes_to_especies_and_razas_tables.php
+database\seeders
+database\seeders\DatabaseSeeder.php
+database\seeders\EspecieSeeder.php
+database\seeders\PacienteSeeder.php
+database\seeders\PropietarioSeeder.php
+database\seeders\RazaSeeder.php
+database\seeders\RoleSeeder.php
+database\seeders\UserSeeder.php
+database\.gitignore
+database\database.sqlite
+public
+public\.htaccess
+public\favicon.ico
+public\index.php
+public\robots.txt
+resources
+resources\css
+resources\css\app.css
+resources\js
+resources\js\app.js
+resources\js\bootstrap.js
+resources\views
+resources\views\welcome.blade.php
+routes
+routes\api.php
+routes\console.php
+routes\web.php
+tests
+tests\Feature
+tests\Feature\ExampleTest.php
+tests\Unit
+tests\Unit\ExampleTest.php
+tests\TestCase.php
+.editorconfig
+.env
+.env.example
+.gitattributes
+.gitignore
+artisan
+composer.json
+composer.lock
+package.json
+phpunit.xml
+proyecto_completo.txt
+README.md
+vite.config.js
+
+=== MIGRACIONES ===
+
+Name                                                                       LastWriteTime             Length
+----                                                                       -------------             ------
+0001_01_01_000000_create_users_table.php                                   9/06/2025 9:16:34 a. m.     1473
+0001_01_01_000001_create_cache_table.php                                   9/06/2025 9:16:34 a. m.      849
+0001_01_01_000002_create_jobs_table.php                                    9/06/2025 9:16:34 a. m.     1812
+2025_06_12_211649_create_personal_access_tokens_table.php                  12/06/2025 4:16:48 p. m.     856
+2025_06_12_213304_create_roles_table.php                                   12/06/2025 4:34:54 p. m.     782
+2025_06_12_213331_add_fields_to_users_table.php                            12/06/2025 4:35:19 p. m.    2499
+2025_06_13_021912_create_especies_table.php                                12/06/2025 9:22:57 p. m.     916
+2025_06_13_021942_create_razas_table.php                                   12/06/2025 9:23:29 p. m.    1675
+2025_06_13_025352_create_propietarios_table.php                            12/06/2025 9:55:37 p. m.    2291
+2025_06_13_025400_create_pacientes_table.php                               12/06/2025 9:55:53 p. m.    3933
+2025_06_13_030818_add_soft_deletes_to_propietarios_and_pacientes_table.php 12/06/2025 10:11:28 p. m.    904
+2025_06_13_030943_create_veterinarios_table.php                            12/06/2025 10:12:04 p. m.   1473
+2025_06_13_100000_add_soft_deletes_to_especies_and_razas_tables.php        12/06/2025 9:37:48 p. m.     840
+
+
+=== MODELOS ===
+
+Name            LastWriteTime             Length
+----            -------------             ------
+Especie.php     12/06/2025 9:24:03 p. m.    2270
+Paciente.php    12/06/2025 10:20:47 p. m.  10565
+Propietario.php 12/06/2025 10:15:42 p. m.   7482
+Raza.php        12/06/2025 9:24:20 p. m.    4489
+Role.php        12/06/2025 4:51:20 p. m.    2344
+User.php        12/06/2025 9:58:22 p. m.    5875
+Veterinario.php 12/06/2025 10:11:46 p. m.   1107
+
+
+=== SEEDERS ===
+
+Name                  LastWriteTime             Length
+----                  -------------             ------
+DatabaseSeeder.php    12/06/2025 10:01:24 p. m.   3311
+EspecieSeeder.php     12/06/2025 9:24:41 p. m.    3200
+PacienteSeeder.php    12/06/2025 10:00:17 p. m.  13101
+PropietarioSeeder.php 12/06/2025 10:04:42 p. m.   9554
+RazaSeeder.php        12/06/2025 9:24:57 p. m.   11911
+RoleSeeder.php        12/06/2025 4:36:36 p. m.    4975
+UserSeeder.php        12/06/2025 4:48:39 p. m.    4368
+
