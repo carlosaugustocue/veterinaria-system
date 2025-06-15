@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 use App\Models\Consulta;
@@ -23,6 +24,8 @@ class Cita extends Model
         'tipo_cita',
         'estado',
         'motivo_consulta',
+        'fecha_confirmacion',
+        'confirmado_por_user_id',
         'observaciones',
         'sintomas_reportados',
         'prioridad',
@@ -51,6 +54,7 @@ class Cita extends Model
         'fecha_hora' => 'datetime',
         'hora_llegada' => 'datetime',
         'hora_inicio_atencion' => 'datetime',
+        'fecha_confirmacion' => 'datetime',
         'hora_fin_atencion' => 'datetime',
         'fecha_cancelacion' => 'datetime',
         'fecha_recordatorio_24h' => 'datetime',
@@ -591,6 +595,11 @@ public function getEstadoMedicoAttribute(): string
         default:
             return 'Estado desconocido';
     }
+}
+
+public function confirmadoPor(): BelongsTo
+{
+    return $this->belongsTo(User::class, 'confirmado_por_user_id');
 }
 
     /**
