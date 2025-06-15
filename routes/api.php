@@ -4,6 +4,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\TestApiController;
 use App\Http\Controllers\Api\V1\CitaController;
+use App\Http\Controllers\Api\V1\PropietarioController;
+use App\Http\Controllers\Api\V1\PacienteController;
+use App\Http\Controllers\Api\V1\ConsultaController;
+use App\Http\Controllers\Api\V1\FormulaController;
+use App\Http\Controllers\Api\V1\FacturaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,6 +48,26 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('/pagination', [TestApiController::class, 'testPagination'])->name('pagination');
             Route::post('/validation', [TestApiController::class, 'testValidation'])->name('validation');
         });
+
+        // RUTAS DE PROPIETARIOS
+        Route::prefix('propietarios')->name('propietarios.')->group(function () {
+            Route::get('/', [PropietarioController::class, 'index'])->name('index');
+            Route::post('/', [PropietarioController::class, 'store'])->name('store');
+            Route::get('/buscar', [PropietarioController::class, 'buscar'])->name('buscar');
+            Route::get('/{propietario}', [PropietarioController::class, 'show'])->name('show');
+            Route::put('/{propietario}', [PropietarioController::class, 'update'])->name('update');
+            Route::delete('/{propietario}', [PropietarioController::class, 'destroy'])->name('destroy');
+        });
+
+        // RUTAS DE PACIENTES
+        Route::prefix('pacientes')->name('pacientes.')->group(function () {
+            Route::get('/', [PacienteController::class, 'index'])->name('index');
+            Route::post('/', [PacienteController::class, 'store'])->name('store');
+            Route::get('/{paciente}', [PacienteController::class, 'show'])->name('show');
+            Route::put('/{paciente}', [PacienteController::class, 'update'])->name('update');
+            Route::delete('/{paciente}', [PacienteController::class, 'destroy'])->name('destroy');
+            Route::get('/{paciente}/historial', [PacienteController::class, 'historial'])->name('historial');
+        });
         
         // RUTAS DE CITAS
         Route::prefix('citas')->name('citas.')->group(function () {
@@ -54,6 +79,36 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::delete('/{cita}', [CitaController::class, 'destroy'])->name('destroy');
             Route::post('/{cita}/confirmar', [CitaController::class, 'confirmar'])->name('confirmar');
             Route::post('/{cita}/reprogramar', [CitaController::class, 'reprogramar'])->name('reprogramar');
+        });
+
+        // RUTAS DE CONSULTAS
+        Route::prefix('consultas')->name('consultas.')->group(function () {
+            Route::get('/', [ConsultaController::class, 'index'])->name('index');
+            Route::post('/', [ConsultaController::class, 'store'])->name('store');
+            Route::get('/{consulta}', [ConsultaController::class, 'show'])->name('show');
+            Route::put('/{consulta}', [ConsultaController::class, 'update'])->name('update');
+            Route::post('/{consulta}/sintomas', [ConsultaController::class, 'registrarSintomas'])->name('sintomas');
+            Route::post('/{consulta}/diagnostico', [ConsultaController::class, 'registrarDiagnostico'])->name('diagnostico');
+        });
+
+        // RUTAS DE FÓRMULAS
+        Route::prefix('formulas')->name('formulas.')->group(function () {
+            Route::get('/', [FormulaController::class, 'index'])->name('index');
+            Route::post('/', [FormulaController::class, 'store'])->name('store');
+            Route::get('/{formula}', [FormulaController::class, 'show'])->name('show');
+            Route::put('/{formula}', [FormulaController::class, 'update'])->name('update');
+            Route::post('/{formula}/email', [FormulaController::class, 'enviarPorEmail'])->name('email');
+            Route::post('/{formula}/whatsapp', [FormulaController::class, 'enviarPorWhatsApp'])->name('whatsapp');
+        });
+
+        // RUTAS DE FACTURAS
+        Route::prefix('facturas')->name('facturas.')->group(function () {
+            Route::get('/', [FacturaController::class, 'index'])->name('index');
+            Route::post('/', [FacturaController::class, 'store'])->name('store');
+            Route::get('/{factura}', [FacturaController::class, 'show'])->name('show');
+            Route::put('/{factura}', [FacturaController::class, 'update'])->name('update');
+            Route::post('/{factura}/pago', [FacturaController::class, 'procesarPago'])->name('pago');
+            Route::get('/{factura}/pdf', [FacturaController::class, 'generarPDF'])->name('pdf');
         });
         
         // RUTAS CON MIDDLEWARE DE ROLES
