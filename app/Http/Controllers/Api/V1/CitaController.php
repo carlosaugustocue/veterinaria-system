@@ -489,12 +489,107 @@ class CitaController extends BaseApiController
     
     /**
      * Confirmar cita
-     * TODO: Implementar
+     * 
+     * @param int $id
+     * @return JsonResponse
      */
     public function confirmar($id): JsonResponse
     {
-        // Por implementar...
-        return $this->successResponse([], 'Método confirmar por implementar');
+        try {
+            $cita = Cita::with([
+                'paciente:id,nombre',
+                'veterinario.user:id,nombre,apellido',
+                'propietario.user:id,nombre,apellido,telefono,email'
+            ])->findOrFail($id);
+            
+            // Verificar autorización
+            $user = Auth::user();
+            
+            // Los clientes pueden confirmar sus propias citas
+            if ($user->hasRole('cliente')) {
+                if ($cita->propietario_id !== $user->propietario->id) {
+                    return $this->errorResponse('No tienes autorización para confirmar esta cita', 403);
+                }
+            }
+            
+            // Los veterinarios pueden confirmar sus citas asignadas
+            if ($user->hasRole('veterinario')) {
+                if ($cita->veterinario_id !== $user->veterinario->id) {
+                    return $this->errorResponse('No tienes autorización para confirmar esta cita', 403);
+                }
+            }
+            
+            // Verificar que la cita esté en estado programada
+            if ($cita->estado !== Cita::ESTADO_PROGRAMADA) {
+                return $this->errorResponse(
+                    'Solo se pueden confirmar citas que estén en estado programada. Estado actual: ' . $cita->estado,
+                    422
+                );
+            }
+            
+            // Verificar que la fecha de la cita sea futura
+            if (Carbon::parse($cita->fecha_hora)->isPast()) {
+                return $this->errorResponse('No se pueden confirmar citas pasadas', 422);
+            }
+            
+            // Actualizar estado
+            $cita->update([
+                'estado' => Cita::ESTADO_CONFIRMADA,
+                'fecha_confirmacion' => now(),
+                'confirmado_por_user_id' => $user->id,
+                'modificado_por_user_id' => $user->id
+            ]);
+            
+            // Recargar la cita con las relaciones actualizadas
+            $cita->refresh();
+            
+            // Preparar respuesta con información adicional
+            $response = [
+                'cita' => $cita,
+                'mensaje_confirmacion' => $this->getMensajeConfirmacionCita($cita),
+                'recordatorio' => [
+                    'texto' => 'Se enviará recordatorio automático 24 horas antes de la cita',
+                    'fecha_recordatorio' => Carbon::parse($cita->fecha_hora)->subDay()->format('Y-m-d H:i:s')
+                ]
+            ];
+            
+            return $this->successResponse(
+                $response,
+                'Cita confirmada exitosamente'
+            );
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->errorResponse('Cita no encontrada', 404);
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                'Error al confirmar la cita: ' . $e->getMessage(),
+                500
+            );
+        }
+    }
+    
+    /**
+     * Generar mensaje de confirmación específico
+     */
+    private function getMensajeConfirmacionCita(Cita $cita): string
+    {
+        $fecha = Carbon::parse($cita->fecha_hora)->locale('es');
+        
+        $mensaje = sprintf(
+            "✅ Cita CONFIRMADA para %s el %s a las %s con %s.",
+            $cita->paciente->nombre,
+            $fecha->translatedFormat('l j \\d\\e F'),
+            $fecha->format('h:i A'),
+            $cita->veterinario->user->nombre_completo
+        );
+        
+        if ($cita->requiere_ayuno) {
+            $mensaje .= " ⚠️ RECORDATORIO: El paciente debe estar en ayunas.";
+        }
+        
+        $mensaje .= " 📧 Recibirá un recordatorio 24 horas antes.";
+        
+        return $mensaje;
     }
     
     /**
