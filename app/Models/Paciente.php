@@ -417,6 +417,11 @@ public function getHistorialMedicoAttribute()
         ->get();
 }
 
+public function historial()
+{
+    return $this->hasMany(Consulta::class, 'paciente_id');
+}
+
 public function getConsultasEsteAnoAttribute()
 {
     return $this->consultas()

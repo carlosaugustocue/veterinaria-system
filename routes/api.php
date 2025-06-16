@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\PacienteController;
 use App\Http\Controllers\Api\V1\ConsultaController;
 use App\Http\Controllers\Api\V1\FormulaController;
 use App\Http\Controllers\Api\V1\FacturaController;
+use App\Http\Controllers\Api\V1\VeterinarioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -109,6 +110,16 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::put('/{factura}', [FacturaController::class, 'update'])->name('update');
             Route::post('/{factura}/pago', [FacturaController::class, 'procesarPago'])->name('pago');
             Route::get('/{factura}/pdf', [FacturaController::class, 'generarPDF'])->name('pdf');
+        });
+
+        Route::prefix('veterinarios')->name('veterinarios.')->group(function () {
+            Route::get('/', [VeterinarioController::class, 'index'])->name('index');
+            Route::post('/', [VeterinarioController::class, 'store'])->name('store');
+            Route::get('/{veterinario}', [VeterinarioController::class, 'show'])->name('show');
+            Route::put('/{veterinario}', [VeterinarioController::class, 'update'])->name('update');
+            Route::delete('/{veterinario}', [VeterinarioController::class, 'destroy'])->name('destroy');
+            Route::get('/{veterinario}/citas', [VeterinarioController::class, 'citas'])->name('citas');
+            Route::get('/{veterinario}/propietarios-preferidos', [VeterinarioController::class, 'propietariosPreferidos'])->name('propietarios-preferidos');
         });
         
         // RUTAS CON MIDDLEWARE DE ROLES
