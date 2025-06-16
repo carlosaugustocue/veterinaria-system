@@ -38,6 +38,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             'laravel_version' => app()->version()
         ]);
     })->name('test.public');
+
+      // RUTAS DE AUTENTICACIÓN (Sin middleware de autenticación)
+      Route::prefix('auth')->name('auth.')->group(function () {
+        Route::post('/register', [AuthController::class, 'register'])->name('register');
+        Route::post('/login', [AuthController::class, 'login'])->name('login');
+    });
     
     // ✅ RUTAS AUTENTICADAS
     Route::middleware(['auth:sanctum'])->group(function () {
@@ -48,6 +54,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('/responses', [TestApiController::class, 'testResponses'])->name('responses');
             Route::get('/pagination', [TestApiController::class, 'testPagination'])->name('pagination');
             Route::post('/validation', [TestApiController::class, 'testValidation'])->name('validation');
+        });
+
+        Route::prefix('auth')->name('auth.')->group(function () {
+            Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+            Route::get('/me', [AuthController::class, 'me'])->name('me');
+            Route::post('/refresh', [AuthController::class, 'refresh'])->name('refresh');
         });
 
         // RUTAS DE PROPIETARIOS
