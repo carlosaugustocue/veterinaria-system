@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\V1\ConsultaController;
 use App\Http\Controllers\Api\V1\FormulaController;
 use App\Http\Controllers\Api\V1\FacturaController;
 use App\Http\Controllers\Api\V1\VeterinarioController;
+use App\Http\Controllers\Api\V1\AuthController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +46,24 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/register', [AuthController::class, 'register'])->name('register');
         Route::post('/login', [AuthController::class, 'login'])->name('login');
     });
+
+    // Route::prefix('propietarios')->name('propietarios.')->group(function () {
+    //     Route::get('/', [PropietarioController::class, 'index'])->name('index');
+    //     Route::post('/', [PropietarioController::class, 'store'])->name('store');
+    //     Route::get('/buscar', [PropietarioController::class, 'buscar'])->name('buscar');
+    //     Route::get('/{propietario}', [PropietarioController::class, 'show'])->name('show');
+    //     Route::put('/{propietario}', [PropietarioController::class, 'update'])->name('update');
+    //     Route::delete('/{propietario}', [PropietarioController::class, 'destroy'])->name('destroy');
+    // });
+
+    // Route::prefix('pacientes')->name('pacientes.')->group(function () {
+    //     Route::get('/', [PacienteController::class, 'index'])->name('index');
+    //     Route::post('/', [PacienteController::class, 'store'])->name('store');
+    //     Route::get('/{paciente}', [PacienteController::class, 'show'])->name('show');
+    //     Route::put('/{paciente}', [PacienteController::class, 'update'])->name('update');
+    //     Route::delete('/{paciente}', [PacienteController::class, 'destroy'])->name('destroy');
+    //     Route::get('/{paciente}/historial', [PacienteController::class, 'historial'])->name('historial');
+    // });
     
     // ✅ RUTAS AUTENTICADAS
     Route::middleware(['auth:sanctum'])->group(function () {
@@ -62,7 +82,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('/refresh', [AuthController::class, 'refresh'])->name('refresh');
         });
 
-        // RUTAS DE PROPIETARIOS
+        RUTAS DE PROPIETARIOS
         Route::prefix('propietarios')->name('propietarios.')->group(function () {
             Route::get('/', [PropietarioController::class, 'index'])->name('index');
             Route::post('/', [PropietarioController::class, 'store'])->name('store');
@@ -72,7 +92,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::delete('/{propietario}', [PropietarioController::class, 'destroy'])->name('destroy');
         });
 
-        // RUTAS DE PACIENTES
+        RUTAS DE PACIENTES
         Route::prefix('pacientes')->name('pacientes.')->group(function () {
             Route::get('/', [PacienteController::class, 'index'])->name('index');
             Route::post('/', [PacienteController::class, 'store'])->name('store');
