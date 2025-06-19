@@ -606,11 +606,84 @@ class CitaController extends BaseApiController
      * Ver disponibilidad de horarios
      * TODO: Implementar
      */
+    // public function disponibilidad(Request $request): JsonResponse
+    // {
+        
+        
+    //     // Por implementar...
+    //     // return $this->successResponse([], 'Método disponibilidad por implementar');
+    // }
     public function disponibilidad(Request $request): JsonResponse
-    {
-        // Por implementar...
-        return $this->successResponse([], 'Método disponibilidad por implementar');
+{
+    try {
+        $request->validate([
+            'veterinario_id' => 'required|exists:veterinarios,id',
+            'fecha' => 'required|date_format:Y-m-d',
+            'duracion' => 'required|integer|min:15|max:480'
+        ]);
+
+        $veterinarioId = $request->veterinario_id;
+        $fecha = Carbon::createFromFormat('Y-m-d', $request->fecha)->startOfDay();
+        $duracion = (int) $request->duracion;
+
+        // Definir jornada (puedes hacer esto dinámico si tienes ese campo)
+        $horaInicio = $fecha->copy()->setTime(8, 0);   // 08:00 AM
+        $horaFin = $fecha->copy()->setTime(18, 0);     // 06:00 PM
+
+        $bloques = [];
+        $hora = $horaInicio->copy();
+        while ($hora->copy()->addMinutes($duracion)->lte($horaFin)) {
+            $bloques[] = $hora->format('H:i');
+            $hora->addMinutes($duracion);
+        }
+
+        // Obtener citas existentes de ese veterinario ese día
+        $citas = Cita::where('veterinario_id', $veterinarioId)
+            ->whereIn('estado', [Cita::ESTADO_PROGRAMADA, Cita::ESTADO_CONFIRMADA])
+            ->whereDate('fecha_hora', $fecha)
+            ->get();
+
+        $horariosOcupados = [];
+
+        foreach ($citas as $cita) {
+            $inicio = Carbon::parse($cita->fecha_hora);
+            $fin = $inicio->copy()->addMinutes($cita->duracion_minutos ?? 30);
+
+            $horaBloque = $horaInicio->copy();
+            while ($horaBloque->copy()->addMinutes($duracion)->lte($horaFin)) {
+                $inicioBloque = $horaBloque->copy();
+                $finBloque = $inicioBloque->copy()->addMinutes($duracion);
+
+                if ($inicioBloque->lt($fin) && $finBloque->gt($inicio)) {
+                    $horariosOcupados[] = $inicioBloque->format('H:i');
+                }
+
+                $horaBloque->addMinutes($duracion);
+            }
+        }
+
+        $horariosDisponibles = array_values(array_diff($bloques, $horariosOcupados));
+
+        return $this->successResponse([
+            'disponible' => count($horariosDisponibles) > 0,
+            'horarios_disponibles' => $horariosDisponibles,
+            'proximas_citas' => $citas->map(function ($cita) {
+                return [
+                    'id' => $cita->id,
+                    'paciente' => $cita->paciente->nombre ?? 'Sin nombre',
+                    'hora' => Carbon::parse($cita->fecha_hora)->format('H:i'),
+                    'duracion' => $cita->duracion_minutos ?? 30,
+                    'estado' => $cita->estado,
+                ];
+            })
+        ], 'Disponibilidad verificada');
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return $this->errorResponse('Parámetros inválidos', 422, $e->errors());
+    } catch (\Exception $e) {
+        return $this->errorResponse('Error al verificar disponibilidad: ' . $e->getMessage(), 500);
     }
+}
+
     
     /**
      * Obtener prioridad según tipo de cita

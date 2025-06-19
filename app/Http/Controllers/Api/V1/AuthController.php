@@ -31,7 +31,7 @@ class AuthController extends BaseApiController
                 'direccion' => 'required|string|max:255',
                 'ciudad' => 'required|string|max:100',
                 'fecha_nacimiento' => 'required|date|before:today',
-                'sexo' => 'required|in:masculino,femenino,otro',
+                'sexo' => 'required|in:M,F,otro',
                 'role' => 'sometimes|string|in:cliente,veterinario,recepcionista,administrador'
             ]);
 

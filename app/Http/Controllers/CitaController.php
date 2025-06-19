@@ -606,11 +606,138 @@ class CitaController extends BaseApiController
      * Ver disponibilidad de horarios
      * TODO: Implementar
      */
-    public function disponibilidad(Request $request): JsonResponse
-    {
-        // Por implementar...
-        return $this->successResponse([], 'Método disponibilidad por implementar');
+    /**
+ * Ver disponibilidad de horarios para un veterinario en una fecha específica
+ * 
+ * @param Request $request
+ * @return JsonResponse
+ */
+public function disponibilidad(Request $request): JsonResponse
+{
+    try {
+        // Validar parámetros requeridos
+        $validated = $request->validate([
+            'veterinario_id' => 'required|exists:veterinarios,id',
+            'fecha' => 'required|date|after_or_equal:today',
+            'duracion' => 'nullable|integer|min:15|max:480' // 15 min a 8 horas
+        ]);
+
+        $veterinarioId = $validated['veterinario_id'];
+        $fecha = Carbon::parse($validated['fecha']);
+        $duracionSolicitada = $validated['duracion'] ?? 30; // 30 minutos por defecto
+
+        // Verificar que el veterinario existe y está activo
+        $veterinario = Veterinario::with('user:id,nombre,apellido')
+            ->findOrFail($veterinarioId);
+
+        // Definir horario laboral (puedes moverlo a configuración o al modelo Veterinario)
+        $horaInicio = $fecha->copy()->setTime(8, 0);  // 8:00 AM
+        $horaFin = $fecha->copy()->setTime(18, 0);    // 6:00 PM
+        $intervaloMinutos = 30; // Intervalos de 30 minutos
+
+        // Obtener citas existentes del veterinario para esa fecha
+        $citasExistentes = Cita::where('veterinario_id', $veterinarioId)
+            ->whereDate('fecha_hora', $fecha)
+            ->whereIn('estado', [Cita::ESTADO_PROGRAMADA, Cita::ESTADO_CONFIRMADA])
+            ->orderBy('fecha_hora')
+            ->get(['fecha_hora', 'duracion_minutos', 'tipo_cita', 'paciente_id']);
+
+        // Generar todos los horarios posibles
+        $horariosDisponibles = [];
+        $current = $horaInicio->copy();
+
+        while ($current->lt($horaFin)) {
+            $horaActual = $current->format('H:i');
+            $finBloque = $current->copy()->addMinutes($duracionSolicitada);
+
+            // Verificar que el bloque completo esté dentro del horario laboral
+            if ($finBloque->lte($horaFin)) {
+                // Verificar si no hay conflicto con citas existentes
+                $hayConflicto = false;
+
+                foreach ($citasExistentes as $citaExistente) {
+                    $inicioCitaExistente = Carbon::parse($citaExistente->fecha_hora);
+                    $finCitaExistente = $inicioCitaExistente->copy()->addMinutes($citaExistente->duracion_minutos);
+
+                    // Verificar solapamiento
+                    if ($current->lt($finCitaExistente) && $finBloque->gt($inicioCitaExistente)) {
+                        $hayConflicto = true;
+                        break;
+                    }
+                }
+
+                // Si no hay conflicto y la hora no ha pasado (para fecha de hoy)
+                if (!$hayConflicto) {
+                    $ahora = now();
+                    $horaCompleta = $fecha->copy()->setTimeFromTimeString($horaActual);
+                    
+                    // Si es hoy, solo mostrar horarios futuros (con al menos 2 horas de anticipación)
+                    if ($fecha->isToday()) {
+                        if ($horaCompleta->gt($ahora->addHours(2))) {
+                            $horariosDisponibles[] = $horaActual;
+                        }
+                    } else {
+                        $horariosDisponibles[] = $horaActual;
+                    }
+                }
+            }
+
+            $current->addMinutes($intervaloMinutos);
+        }
+
+        // Obtener próximas citas del veterinario (para contexto)
+        $proximasCitas = Cita::where('veterinario_id', $veterinarioId)
+            ->whereDate('fecha_hora', $fecha)
+            ->whereIn('estado', [Cita::ESTADO_PROGRAMADA, Cita::ESTADO_CONFIRMADA])
+            ->with('paciente:id,nombre')
+            ->orderBy('fecha_hora')
+            ->get()
+            ->map(function ($cita) {
+                return [
+                    'hora' => Carbon::parse($cita->fecha_hora)->format('H:i'),
+                    'paciente' => $cita->paciente->nombre ?? 'Paciente',
+                    'tipo' => $cita->tipo_cita,
+                    'duracion' => $cita->duracion_minutos
+                ];
+            });
+
+        // Preparar respuesta
+        $response = [
+            'disponible' => count($horariosDisponibles) > 0,
+            'fecha' => $fecha->format('Y-m-d'),
+            'veterinario' => [
+                'id' => $veterinario->id,
+                'nombre' => $veterinario->user->nombre . ' ' . $veterinario->user->apellido,
+                'especialidad' => $veterinario->especialidad ?? 'Medicina General'
+            ],
+            'horarios_disponibles' => $horariosDisponibles,
+            'horario_laboral' => [
+                'inicio' => '08:00',
+                'fin' => '18:00',
+                'intervalo_minutos' => $intervaloMinutos
+            ],
+            'duracion_solicitada' => $duracionSolicitada,
+            'proximas_citas' => $proximasCitas,
+            'estadisticas' => [
+                'total_horarios_posibles' => (int) (($horaFin->diffInMinutes($horaInicio)) / $intervaloMinutos),
+                'horarios_ocupados' => $citasExistentes->count(),
+                'horarios_disponibles' => count($horariosDisponibles)
+            ]
+        ];
+
+        return $this->successResponse($response, 'Disponibilidad verificada exitosamente');
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return $this->errorResponse('Parámetros inválidos', 422, $e->errors());
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        return $this->errorResponse('Veterinario no encontrado', 404);
+    } catch (\Exception $e) {
+        return $this->errorResponse(
+            'Error al verificar disponibilidad: ' . $e->getMessage(),
+            500
+        );
     }
+}
     
     /**
      * Obtener prioridad según tipo de cita
